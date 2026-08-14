@@ -37,6 +37,33 @@ Questions the documentation cannot answer, however they are phrased:
 These go to BETER, not to the model. Repeat the reader's specifics — event id,
 payload, timestamps — so the message they send is actionable.
 
+## Guarantees are quoted, never inferred
+
+A guarantee is a promise the client will build on and will not re-check. Stating one
+the feed does not make produces a consumer that silently corrupts data under
+conditions the client never tests.
+
+State a guarantee only when the documentation states it, and state it with the exact
+scope the documentation gives — per match, per connection, per channel, per sport.
+Quote the sentence. A guarantee whose scope you cannot quote is not a guarantee you
+can pass on.
+
+This covers ordering, delivery, de-duplication, exactly-once and at-least-once
+semantics, retention, replay windows, latency, uptime, and completeness.
+
+When the documentation is silent, the answer is that the documentation states no
+guarantee, followed by what the client should therefore handle defensively —
+reordering, duplicates, gaps — and the recommendation to confirm with BETER before
+relying on any of it.
+
+| Reasoning that leads to a wrong answer | What is actually true |
+|---|---|
+| "The transport is TCP, so ordering follows" | Ordering at the transport says nothing about ordering across channels, connections, or matches. |
+| "SignalR preserves order on a hub connection" | The library's behaviour is not the product's promise, and BETER's scoping may be narrower. |
+| "A support message once said ordering is guaranteed per connection" | An answer written for one incident is not the specification, and its scope is usually narrower than remembered. |
+| "Offsets exist, so replay must be complete" | The existence of a mechanism is not a statement of its window or its completeness. |
+| "The client needs a definite answer" | A wrong guarantee is worse than an open question. Escalate. |
+
 ## Numeric codes are never guessed
 
 The feed identifies almost everything by number: `msgType`, `stage`, `interval`,
@@ -110,6 +137,10 @@ the SignalR default for anything transport-related.
 
 **Answering "why is my feed behind" without the offset page.** Lag, replay, and
 snapshot behaviour are defined by offset logic, not by the client library.
+
+**Widening a guarantee's scope.** "Ordered within a match on one connection" is not
+"ordered on that connection", and neither is "ordered across connections". Carry the
+scope through verbatim or do not carry the claim.
 
 **Turning a client-console or account question into a feed answer.** Bookings,
 market templates, and margins are configured per client; the documentation
