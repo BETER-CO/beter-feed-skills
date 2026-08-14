@@ -5,6 +5,14 @@ Base: `https://docs.beter.co/public/`
 Pages are server-rendered; a plain HTTP GET returns full content. There is no
 `llms.txt` and no raw-markdown route — `.md` and `.txt` suffixes return 404.
 
+Fetch raw and extract the text yourself. Page content sits inside `<main>`; the rest
+of the payload is the sidebar and the framework's hydration data, which is why a
+page can be several hundred kilobytes for a few screens of prose. Decode as UTF-8:
+pages carry typographic quotes and Cyrillic name examples, and a lossy decode
+corrupts them silently.
+
+Trailing slashes redirect — `/public/` 308s to `/public`.
+
 ## Feed — General
 
 | Path | Page |
