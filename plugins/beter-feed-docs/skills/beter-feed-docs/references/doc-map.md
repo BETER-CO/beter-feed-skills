@@ -81,7 +81,9 @@ example `changelog#17062026`.
 
 ## Client Console
 
-Outside the feed-integration scope of this skill; listed for completeness.
+The Client Console at `https://console.beter.co` is where matches are booked and
+market settings are made; those settings determine what the feed delivers, so these
+pages are in scope for integration questions.
 
 | Path | Page |
 |---|---|
