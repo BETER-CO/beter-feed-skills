@@ -19,30 +19,60 @@ Every answer states which documentation page it came from, as a full URL.
 
 Answer in the language the question was asked in.
 
-## Only the public documentation is ground truth
+## The documentation is the default ground truth
 
-`docs.beter.co/public` is the only source an answer may rest on.
+`docs.beter.co/public` is what an answer rests on unless the reader says otherwise.
 
-Do not derive BETER feed behaviour from anything else that happens to be reachable —
-service source code, internal repositories or wikis, engineering documents, a
-decompiled client, or the reader's own existing integration. Material like that is
-implementation rather than contract, it is frequently stale, and quoting it exposes
-internals to whoever the answer is forwarded to. Reachability is not permission.
+The documentation is not indexed for search and is not discoverable by looking for
+it. BETER gives integrating teams the link directly. So a failed search means the
+skill's own page map is the way in, not that the documentation is missing — never
+conclude from a search that no public documentation exists.
 
-An answer cites public documentation URLs and nothing else. No file paths, no
-internal hostnames, no repository names, no class or namespace names, no ticket
-keys, no names of other BETER clients.
+Do not silently derive feed behaviour from other material that happens to be
+reachable: service source code, internal repositories or wikis, packaged assemblies,
+a decompiled client, or the reader's own existing integration. That material is
+implementation rather than contract, it is often ahead of or behind the published
+version, and it is not something an external reader could have consulted.
 
-When the public documentation does not answer the question, that is the finding.
-Report it as one — never substitute a source the reader could not have consulted
-themselves.
+### When local BETER source would answer the question
+
+BETER's own engineers run this skill too, and for their work — reproducing a client
+report, testing against unreleased behaviour, checking whether the documentation
+matches what ships — the local code is the right source and the documentation is the
+stale one.
+
+So do not ignore it silently. Say what you found, and ask:
+
+> The documentation does not cover this. A BETER service repository on this machine
+> appears to, at `<path>`. Should I answer from the implementation instead?
+
+Then follow the answer. Without a yes, the answer stays on the documentation.
+
+When permitted to use local source, keep it visibly separate: label it as
+implementation rather than contract, name the version or commit it came from, and
+say that it may differ from what any given client's account receives. Finish with a
+warning that the passage cannot go to a client as written.
+
+### What an answer may cite
+
+An answer written for a client cites public documentation URLs only. No file paths,
+no internal hostnames, no repository names, no class or namespace names, no ticket
+keys, no names of other BETER clients — those travel with the text when it is
+forwarded.
+
+An answer for a BETER engineer who authorised the implementation source may cite
+that source, and should mark the whole passage as internal.
+
+Default to the client-facing form. Ask which one is wanted when it is unclear and
+the difference would change the answer.
 
 ## When the documentation does not cover it
 
 Say that the documentation does not cover it, name the pages you searched, and point
 the reader at their BETER integration manager or `support@beter.co`. Do not fill the
 gap from general SignalR, WebSocket, or sports-betting knowledge, and do not infer an
-answer from field names.
+answer from field names. Where local BETER source would answer it, ask first — see
+above.
 
 State the basis of a silence claim: which pages were fetched, and that a statement
 may exist on a page not opened. The site's search index cannot be queried directly,
@@ -232,3 +262,9 @@ the changelog; fields get added and the workaround becomes the bug.
 
 **Refusing a Client Console question that the reader could act on.** Describe the
 mechanism; withhold only the account's current state.
+
+**Concluding from a failed search that the documentation does not exist.** The site
+is not indexed. Start from the page map, not from a search engine.
+
+**Using local BETER source without asking, or refusing it without asking.** Both are
+wrong. Surface it and let the reader decide.

@@ -48,6 +48,9 @@ The skills read `https://docs.beter.co/public/` at answer time, so the agent nee
 a web-fetch tool and network access to that host. No credentials are required — the
 documentation is public.
 
+The documentation is not indexed for search, so an agent cannot find it by looking.
+The skill carries the page map, which is most of what it is for.
+
 ## Contributing
 
 Issues and pull requests are welcome. A skill change should state which question
