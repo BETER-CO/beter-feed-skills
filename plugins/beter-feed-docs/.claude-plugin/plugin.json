@@ -1,0 +1,11 @@
+{
+  "name": "beter-feed-docs",
+  "description": "Answers BETER feed integration questions from the official documentation at docs.beter.co.",
+  "version": "0.1.0",
+  "author": {
+    "name": "BETER",
+    "email": "support@beter.co"
+  },
+  "homepage": "https://docs.beter.co/public/",
+  "keywords": ["beter", "feed", "signalr", "websocket", "sports-data", "documentation"]
+}
