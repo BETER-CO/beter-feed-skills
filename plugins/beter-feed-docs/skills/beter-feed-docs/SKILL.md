@@ -74,13 +74,14 @@ gap from general SignalR, WebSocket, or sports-betting knowledge, and do not inf
 answer from field names. Where local BETER source would answer it, ask first — see
 above.
 
-State the basis of a silence claim: which pages were fetched, and that a statement
-may exist on a page not opened. The site's search index cannot be queried directly,
-so a silence claim is only ever as wide as the sweep behind it. "I fetched these
-seven pages and none of them states X" is honest; "the documentation does not
-mention X" is a claim about all 43 pages.
+State the basis of a silence claim when a sweep was made: which pages were fetched,
+and that a statement may exist on a page not opened. The site's search index cannot
+be queried directly, so a silence claim is only ever as wide as the sweep behind it.
+"I fetched these seven pages and none of them states X" is honest; "the
+documentation does not mention X" is a claim about all 43 pages.
 
-Silence comes in two shapes and they are reported differently.
+Silence comes in two shapes and they are reported differently. Read both before
+applying the rule above — one of them involves no sweep at all.
 
 **Searched and absent.** The question is about the feed, pages were fetched, and
 none of them states the answer. Name every page fetched.
@@ -195,8 +196,10 @@ if it came from BETER.
    If no row fits, decide which case it is before fetching anything. A question of a
    kind listed under *When the documentation does not cover it* is routed to BETER
    with no fetch and no pages named. Any other question means the routing table is
-   incomplete, not the question unanswerable: fetch the nearest channel group and
-   say the sweep was chosen by guess, so the reader knows how wide it was.
+   incomplete, not the question unanswerable: fetch the nearest matching rows —
+   the whole channel group if the nearest row is a channel, otherwise just those
+   pages — and say the sweep was chosen by guess, so the reader knows how wide it
+   was.
 2. Fetch each page raw.
 3. Answer from the fetched text. Quote field names, enum values, formulas, and
    limits exactly as written.
