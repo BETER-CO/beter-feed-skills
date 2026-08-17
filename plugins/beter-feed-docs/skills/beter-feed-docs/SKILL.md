@@ -80,6 +80,16 @@ so a silence claim is only ever as wide as the sweep behind it. "I fetched these
 seven pages and none of them states X" is honest; "the documentation does not
 mention X" is a claim about all 43 pages.
 
+Silence comes in two shapes and they are reported differently.
+
+**Searched and absent.** The question is about the feed, pages were fetched, and
+none of them states the answer. Name every page fetched.
+
+**Out of scope by kind.** The question is one of those listed below — no page could
+carry the answer, so no page is fetched. Say that the documentation does not cover
+questions of that kind, and route it. Do not name pages: a sweep that never happened
+must not be claimed, and listing pages implies they were checked.
+
 Questions the documentation cannot answer, however they are phrased:
 
 - Whether a field, market, or sport will be added, and when.
@@ -182,6 +192,11 @@ if it came from BETER.
 
 1. Pick the pages from the routing table. Take the whole channel group when the
    question touches a channel — General Info, Data Contracts, and any topic page.
+   If no row fits, decide which case it is before fetching anything. A question of a
+   kind listed under *When the documentation does not cover it* is routed to BETER
+   with no fetch and no pages named. Any other question means the routing table is
+   incomplete, not the question unanswerable: fetch the nearest channel group and
+   say the sweep was chosen by guess, so the reader knows how wide it was.
 2. Fetch each page raw.
 3. Answer from the fetched text. Quote field names, enum values, formulas, and
    limits exactly as written.
