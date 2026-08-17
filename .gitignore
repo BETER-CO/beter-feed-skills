@@ -2,3 +2,7 @@
 Thumbs.db
 node_modules/
 *.log
+
+# Internal, never publish: client-derived material, project docs, session state
+/.internal/
+/.claude/

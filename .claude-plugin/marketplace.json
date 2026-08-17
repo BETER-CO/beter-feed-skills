@@ -1,19 +1,19 @@
 {
+  "$schema": "https://json.schemastore.org/claude-code-marketplace.json",
   "name": "beter-feed-skills",
+  "version": "1.0.0",
+  "description": "Agent skills for integrating the BETER sports data feed.",
   "owner": {
     "name": "BETER",
     "email": "support@beter.co"
   },
-  "metadata": {
-    "description": "Agent skills for integrating the BETER sports data feed.",
-    "version": "0.1.0"
-  },
   "plugins": [
     {
       "name": "beter-feed-docs",
-      "source": "./plugins/beter-feed-docs",
       "description": "Answers BETER feed integration questions from the official documentation at docs.beter.co.",
-      "version": "0.1.0",
+      "source": "./plugins/beter-feed-docs",
+      "version": "1.0.0",
+      "category": "documentation",
       "author": {
         "name": "BETER"
       },
