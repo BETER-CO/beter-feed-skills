@@ -1,7 +1,7 @@
 {
   "$schema": "https://json.schemastore.org/claude-code-marketplace.json",
   "name": "beter-feed-skills",
-  "version": "1.0.1",
+  "version": "2.0.0",
   "description": "Agent skills for integrating the BETER sports data feed.",
   "owner": {
     "name": "BETER",
@@ -9,15 +9,15 @@
   },
   "plugins": [
     {
-      "name": "beter-feed-docs",
-      "description": "Answers BETER feed integration questions from the official documentation at docs.beter.co.",
-      "source": "./plugins/beter-feed-docs",
-      "version": "1.0.1",
-      "category": "documentation",
+      "name": "beter",
+      "description": "Answers BETER feed integration questions from the official documentation at docs.beter.co, and maps the BETER sports data feed onto a client's own vocabulary and generates the mapping code and its tests.",
+      "source": "./plugins/beter",
+      "version": "2.0.0",
+      "category": "development",
       "author": {
         "name": "BETER"
       },
-      "keywords": ["beter", "feed", "signalr", "websocket", "sports-data", "documentation"]
+      "keywords": ["beter", "feed", "signalr", "websocket", "sports-data", "documentation", "mapping", "integration", "markets", "incidents"]
     }
   ]
 }

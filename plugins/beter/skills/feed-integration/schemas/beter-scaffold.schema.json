@@ -1,0 +1,62 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/BETER-CO/beter-feed-skills/beter-scaffold.schema.json",
+  "title": "Another feed's mapping, scaffolded",
+  "description": "One file per other feed, under beter-feed/scaffolds/. Facts and provenance only: what that feed's integration maps onto this system's own names, where each row was read, and what could not be resolved.",
+  "type": "object",
+  "required": ["feed", "source", "key_shape", "rows"],
+  "additionalProperties": false,
+  "properties": {
+    "feed": { "type": "string", "minLength": 1 },
+    "source": {
+      "type": "object",
+      "required": ["repository", "read_from"],
+      "additionalProperties": false,
+      "properties": {
+        "repository": { "type": "string", "minLength": 1 },
+        "commit": { "type": "string", "minLength": 1 },
+        "read_from": { "enum": ["code", "mapping_file"] },
+        "files": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 }
+        }
+      }
+    },
+    "key_shape": {
+      "type": "array",
+      "minItems": 1,
+      "uniqueItems": true,
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "scope": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "rows": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["key", "target", "at"],
+        "additionalProperties": false,
+        "properties": {
+          "key": {
+            "type": "object",
+            "minProperties": 1,
+            "additionalProperties": { "type": ["string", "number", "boolean"] }
+          },
+          "target": {
+            "type": "object",
+            "required": ["id"],
+            "additionalProperties": false,
+            "properties": { "id": { "type": "string", "minLength": 1 } }
+          },
+          "at": { "type": "string", "minLength": 1 }
+        }
+      }
+    },
+    "unread": {
+      "type": "array",
+      "items": { "type": "string", "minLength": 1 }
+    }
+  }
+}

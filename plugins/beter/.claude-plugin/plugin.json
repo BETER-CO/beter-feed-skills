@@ -1,0 +1,13 @@
+{
+  "name": "beter",
+  "description": "Answers BETER feed integration questions from the official documentation at docs.beter.co, and maps the BETER sports data feed onto a client's own vocabulary and generates the mapping code and its tests.",
+  "version": "2.0.0",
+  "author": {
+    "name": "BETER",
+    "email": "support@beter.co"
+  },
+  "homepage": "https://docs.beter.co/public/",
+  "repository": "https://github.com/BETER-CO/beter-feed-skills",
+  "license": "MIT",
+  "keywords": ["beter", "feed", "signalr", "websocket", "sports-data", "documentation", "mapping", "integration", "markets", "incidents"]
+}
