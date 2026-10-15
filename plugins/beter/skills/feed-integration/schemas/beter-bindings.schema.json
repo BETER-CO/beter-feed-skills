@@ -1,0 +1,29 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/BETER-CO/beter-feed-skills/beter-bindings.schema.json",
+  "title": "Bindings of an existing integration",
+  "description": "beter-feed/bindings.yaml. Per discipline and channel, the existing code that realises the mapping, its failure value, its policy site, and the digest of the resolver file as the skill last saw it. A planned row names a resolver generation will create and carries no digest.",
+  "type": "object",
+  "required": ["version", "bindings"],
+  "additionalProperties": false,
+  "properties": {
+    "version": { "const": 1 },
+    "bindings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["sport", "channel", "resolver", "failure"],
+        "additionalProperties": false,
+        "properties": {
+          "sport": { "type": "integer", "minimum": 1 },
+          "channel": { "enum": ["markets", "stages", "incidents", "sports"] },
+          "resolver": { "type": "string", "pattern": "^[^#\\s]+#[A-Za-z_][A-Za-z0-9_.]*$" },
+          "failure": { "type": "string", "minLength": 1 },
+          "policy_site": { "type": "string", "pattern": "^[^#\\s]+#[A-Za-z_][A-Za-z0-9_.]*$" },
+          "digest": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$", "description": "Present on a row whose resolver file exists; absent on a planned row." },
+          "status": { "enum": ["proposed", "confirmed"] }
+        }
+      }
+    }
+  }
+}

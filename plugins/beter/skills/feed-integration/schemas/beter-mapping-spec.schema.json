@@ -1,0 +1,820 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/BETER-CO/beter-feed-skills/beter-mapping-spec.schema.json",
+  "title": "BETER feed mapping specification",
+  "description": "One file per discipline per channel group. Rows key on type dimensions; market and outcome values are parameters carried by rule.",
+  "type": "object",
+  "required": ["version", "sport", "channel", "catalog", "policy"],
+  "additionalProperties": false,
+  "properties": {
+    "$schema": { "type": "string" },
+    "version": { "const": 1 },
+    "sport": { "type": "integer", "minimum": 0 },
+    "channel": { "enum": ["trading", "scoreboard", "incidents", "timetable"] },
+    "catalog": {
+      "type": "object",
+      "required": ["snapshot"],
+      "additionalProperties": false,
+      "properties": { "snapshot": { "type": "string", "minLength": 1 } }
+    },
+    "policy": {
+      "type": "object",
+      "required": ["on_unmapped"],
+      "additionalProperties": false,
+      "properties": {
+        "on_unmapped": { "enum": ["close_match", "drop_market", "alert_only"] }
+      }
+    },
+    "inference": { "$ref": "#/$defs/inference" },
+    "qualifiers": { "$ref": "#/$defs/qualifiers" },
+    "markets": { "type": "array", "items": { "$ref": "#/$defs/marketRow" } },
+    "stages": { "type": "array", "items": { "$ref": "#/$defs/stageRow" } },
+    "states": {
+      "type": "object",
+      "minProperties": 1,
+      "propertyNames": { "minLength": 1 },
+      "additionalProperties": {
+        "type": "object",
+        "minProperties": 1,
+        "additionalProperties": { "type": ["boolean", "integer", "number", "string", "null"] }
+      }
+    },
+    "cases": {
+      "type": "object",
+      "required": ["emission_order", "undo_chain", "level_shift"],
+      "additionalProperties": false,
+      "properties": {
+        "emission_order": { "$ref": "#/$defs/caseDeclared" },
+        "undo_chain": { "$ref": "#/$defs/caseDeclared" },
+        "level_shift": { "$ref": "#/$defs/caseLevelShift" }
+      }
+    },
+    "incidents": { "type": "array", "items": { "$ref": "#/$defs/incidentRow" } },
+    "sports": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 1,
+      "items": { "$ref": "#/$defs/sportRow" }
+    }
+  },
+  "allOf": [
+    {
+      "if": { "properties": { "channel": { "const": "trading" } }, "required": ["channel"] },
+      "then": {
+        "required": ["markets"],
+        "not": {
+          "anyOf": [
+            { "required": ["stages"] },
+            { "required": ["incidents"] },
+            { "required": ["sports"] },
+            { "required": ["outcomes"] },
+            { "required": ["states"] },
+            { "required": ["cases"] }
+          ]
+        }
+      }
+    },
+    {
+      "if": { "properties": { "channel": { "const": "scoreboard" } }, "required": ["channel"] },
+      "then": {
+        "required": ["stages"],
+        "not": {
+          "anyOf": [
+            { "required": ["markets"] },
+            { "required": ["outcomes"] },
+            { "required": ["incidents"] },
+            { "required": ["sports"] },
+            { "required": ["cases"] }
+          ]
+        }
+      }
+    },
+    {
+      "if": { "properties": { "channel": { "const": "incidents" } }, "required": ["channel"] },
+      "then": {
+        "required": ["incidents"],
+        "not": {
+          "anyOf": [
+            { "required": ["markets"] },
+            { "required": ["outcomes"] },
+            { "required": ["stages"] },
+            { "required": ["sports"] },
+            { "required": ["states"] }
+          ]
+        }
+      }
+    },
+    {
+      "if": { "properties": { "channel": { "const": "timetable" } }, "required": ["channel"] },
+      "then": {
+        "required": ["sports"],
+        "not": {
+          "anyOf": [
+            { "required": ["markets"] },
+            { "required": ["outcomes"] },
+            { "required": ["stages"] },
+            { "required": ["incidents"] },
+            { "required": ["states"] },
+            { "required": ["cases"] }
+          ]
+        },
+        "properties": {
+          "policy": {
+            "properties": {
+              "on_unmapped": { "enum": ["close_match", "alert_only"] }
+            }
+          }
+        }
+      }
+    }
+  ],
+
+  "$defs": {
+    "targetOne": {
+      "type": "object",
+      "required": ["id"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "param": { "type": "string", "minLength": 1 },
+        "qualifiers": {
+          "type": "object",
+          "minProperties": 1,
+          "additionalProperties": { "type": "string" }
+        }
+      }
+    },
+    "targetMany": {
+      "type": "object",
+      "required": ["many"],
+      "additionalProperties": false,
+      "properties": {
+        "many": {
+          "type": "array",
+          "minItems": 2,
+          "items": { "$ref": "#/$defs/targetOne" }
+        }
+      }
+    },
+    "targetSkip": {
+      "type": "object",
+      "required": ["skip", "reason"],
+      "additionalProperties": false,
+      "properties": {
+        "skip": { "const": true },
+        "reason": { "type": "string", "minLength": 1 }
+      }
+    },
+    "targetState": {
+      "type": "object",
+      "required": ["state"],
+      "additionalProperties": false,
+      "properties": { "state": { "type": "string", "minLength": 1 } }
+    },
+    "caseDeclared": {
+      "type": "object",
+      "required": ["applies"],
+      "additionalProperties": false,
+      "properties": {
+        "applies": { "type": "boolean" },
+        "why": { "type": "string", "minLength": 1 }
+      },
+      "if": { "properties": { "applies": { "const": false } }, "required": ["applies"] },
+      "then": { "required": ["why"] }
+    },
+    "caseLevelShift": {
+      "type": "object",
+      "required": ["applies"],
+      "additionalProperties": false,
+      "properties": {
+        "applies": { "type": "boolean" },
+        "why": { "type": "string", "minLength": 1 },
+        "rows": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/incidentKey" }
+        },
+        "field": { "type": "string", "minLength": 1 }
+      },
+      "if": { "properties": { "applies": { "const": false } }, "required": ["applies"] },
+      "then": { "required": ["why"] },
+      "else": { "required": ["rows", "field"] }
+    },
+
+    "qualifiers": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "identity": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["key", "confirmed"],
+            "additionalProperties": false,
+            "properties": {
+              "key": { "type": "string", "minLength": 1 },
+              "confirmed": { "type": "boolean" },
+              "values": { "type": "array", "items": { "type": "string" } },
+              "note": { "type": "string" }
+            }
+          }
+        },
+        "context": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["key", "note"],
+            "additionalProperties": false,
+            "properties": {
+              "key": { "type": "string", "minLength": 1 },
+              "note": { "type": "string", "minLength": 1 }
+            }
+          }
+        },
+        "entity_references": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["resolves_to"],
+            "additionalProperties": false,
+            "properties": {
+              "market": { "type": "integer" },
+              "resolves_to": { "enum": ["competitor", "player"] },
+              "note": { "type": "string" }
+            }
+          }
+        }
+      }
+    },
+
+    "valueRule": {
+      "type": "object",
+      "required": ["from", "rule"],
+      "additionalProperties": false,
+      "properties": {
+        "from": { "type": "string", "minLength": 1 },
+        "rule": {
+          "enum": [
+            "passthrough",
+            "negate",
+            "scale",
+            "offset",
+            "lookup",
+            "score_pair",
+            "score_series",
+            "clock"
+          ]
+        },
+        "factor": { "type": "number" },
+        "by": { "type": "number" },
+        "result_type": { "type": "integer" },
+        "table": {
+          "type": "object",
+          "minProperties": 1,
+          "additionalProperties": { "type": ["string", "number", "integer", "boolean"] }
+        }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "rule": { "const": "scale" } }, "required": ["rule"] },
+          "then": { "required": ["factor"] }
+        },
+        {
+          "if": { "properties": { "rule": { "const": "offset" } }, "required": ["rule"] },
+          "then": { "required": ["by"] }
+        },
+        {
+          "if": { "properties": { "rule": { "const": "lookup" } }, "required": ["rule"] },
+          "then": { "required": ["table"] }
+        },
+        {
+          "if": {
+            "properties": {
+              "rule": {
+                "enum": ["passthrough", "negate", "clock", "score_pair", "score_series"]
+              }
+            },
+            "required": ["rule"]
+          },
+          "then": {
+            "not": {
+              "anyOf": [
+                { "required": ["factor"] },
+                { "required": ["by"] },
+                { "required": ["table"] }
+              ]
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": { "rule": { "enum": ["score_pair", "score_series"] } },
+            "required": ["rule"]
+          },
+          "then": { "required": ["result_type"] },
+          "else": { "not": { "required": ["result_type"] } }
+        }
+      ]
+    },
+    "marketValueRule": {
+      "allOf": [{ "$ref": "#/$defs/valueRule" }],
+      "properties": { "from": { "pattern": "^marketValue\\[[0-9]+\\]$" } }
+    },
+    "outcomeValueRule": {
+      "allOf": [{ "$ref": "#/$defs/valueRule" }],
+      "properties": { "from": { "pattern": "^outcomeValue\\[[0-9]+\\]$" } }
+    },
+    "incidentValueRule": {
+      "allOf": [{ "$ref": "#/$defs/valueRule" }],
+      "properties": { "from": { "pattern": "^params\\.[A-Za-z][A-Za-z0-9_]*$" } }
+    },
+
+    "inference": {
+      "type": "object",
+      "minProperties": 1,
+      "propertyNames": {
+        "enum": ["marketType", "resultType", "interval", "subInterval", "outcomeType", "stage"]
+      },
+      "additionalProperties": { "$ref": "#/$defs/inferenceRule" }
+    },
+    "inferenceRule": {
+      "type": "object",
+      "required": ["from", "rule"],
+      "additionalProperties": false,
+      "properties": {
+        "from": { "enum": ["target.id", "target.param", "target.key"] },
+        "rule": { "enum": ["prefix_table", "suffix_table", "regex_table", "constant"] },
+        "table": {
+          "type": "object",
+          "minProperties": 1,
+          "additionalProperties": { "type": "integer" }
+        },
+        "value": { "type": "integer" },
+        "default": { "type": "integer" }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "rule": { "const": "constant" } }, "required": ["rule"] },
+          "then": { "required": ["value"], "not": { "required": ["table"] } }
+        },
+        {
+          "if": {
+            "properties": {
+              "rule": { "enum": ["prefix_table", "suffix_table", "regex_table"] }
+            },
+            "required": ["rule"]
+          },
+          "then": { "required": ["table"], "not": { "required": ["value"] } }
+        }
+      ]
+    },
+
+    "candidate": {
+      "type": "object",
+      "required": ["id", "confidence", "evidence"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "confidence": { "enum": ["high", "medium", "low"] },
+        "evidence": { "type": "string", "minLength": 1 },
+        "source": {
+          "enum": ["target_catalog", "beter_docs", "other_integration"]
+        },
+        "integration": { "type": "string", "minLength": 1 }
+      },
+      "if": {
+        "properties": { "source": { "const": "other_integration" } },
+        "required": ["source"]
+      },
+      "then": { "required": ["integration"] },
+      "else": { "not": { "required": ["integration"] } }
+    },
+    "composed": {
+      "type": "object",
+      "required": ["through", "hops"],
+      "additionalProperties": false,
+      "properties": {
+        "through": { "type": "string", "minLength": 1 },
+        "hops": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 2,
+          "items": {
+            "type": "object",
+            "required": ["from", "to", "source"],
+            "additionalProperties": false,
+            "properties": {
+              "from": { "type": "string", "minLength": 1 },
+              "to": { "type": "string", "minLength": 1 },
+              "source": { "type": "string", "minLength": 1 }
+            }
+          }
+        }
+      }
+    },
+
+    "rowCommon": {
+      "type": "object",
+      "properties": {
+        "comment": { "type": "string" },
+        "at": { "type": "string", "minLength": 1 }
+      }
+    },
+
+    "proposalCommon": {
+      "type": "object",
+      "properties": {
+        "status": { "enum": ["proposed", "confirmed"] },
+        "candidates": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/candidate" }
+        },
+        "chosen_because": { "type": "string", "minLength": 1 },
+        "composed": { "$ref": "#/$defs/composed" }
+      },
+      "allOf": [
+        { "if": { "required": ["status"] }, "then": { "required": ["candidates"] } },
+        {
+          "if": {
+            "properties": { "candidates": { "minItems": 2 } },
+            "required": ["candidates"]
+          },
+          "then": { "required": ["chosen_because"] }
+        }
+      ]
+    },
+
+    "carriageRule": {
+      "type": "object",
+      "required": ["to", "rule"],
+      "additionalProperties": false,
+      "properties": {
+        "to": { "type": ["string", "null"], "minLength": 1 },
+        "rule": {
+          "enum": [
+            "passthrough",
+            "negate",
+            "scale",
+            "offset",
+            "lookup",
+            "score_pair",
+            "score_series",
+            "clock",
+            "drop"
+          ]
+        },
+        "factor": { "type": "number" },
+        "by": { "type": "number" },
+        "result_type": { "type": "integer" },
+        "reason": { "type": "string", "minLength": 1 },
+        "table": {
+          "type": "object",
+          "minProperties": 1,
+          "additionalProperties": { "type": ["string", "number", "integer", "boolean"] }
+        }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "rule": { "const": "scale" } }, "required": ["rule"] },
+          "then": { "required": ["factor"] }
+        },
+        {
+          "if": { "properties": { "rule": { "const": "offset" } }, "required": ["rule"] },
+          "then": { "required": ["by"] }
+        },
+        {
+          "if": { "properties": { "rule": { "const": "lookup" } }, "required": ["rule"] },
+          "then": { "required": ["table"] }
+        },
+        {
+          "if": {
+            "properties": { "rule": { "enum": ["score_pair", "score_series"] } },
+            "required": ["rule"]
+          },
+          "then": { "required": ["result_type"] },
+          "else": { "not": { "required": ["result_type"] } }
+        },
+        {
+          "if": { "properties": { "rule": { "const": "drop" } }, "required": ["rule"] },
+          "then": {
+            "required": ["reason"],
+            "properties": { "to": { "type": "null" } }
+          },
+          "else": {
+            "not": { "required": ["reason"] },
+            "properties": { "to": { "type": "string" } }
+          }
+        }
+      ]
+    },
+
+    "carriage": {
+      "type": "object",
+      "minProperties": 1,
+      "propertyNames": { "pattern": "^[A-Za-z][A-Za-z0-9_]*$" },
+      "additionalProperties": { "$ref": "#/$defs/carriageRule" }
+    },
+
+    "outcomeSelection": {
+      "type": "object",
+      "required": ["id", "param", "value"],
+      "additionalProperties": false,
+      "properties": {
+        "id": { "type": "string", "minLength": 1 },
+        "param": { "type": "string", "minLength": 1 },
+        "value": { "$ref": "#/$defs/outcomeValueRule" }
+      }
+    },
+    "outcomeMap": {
+      "type": "object",
+      "minProperties": 1,
+      "propertyNames": { "pattern": "^[0-9]+$" },
+      "additionalProperties": {
+        "anyOf": [
+          { "type": "string", "minLength": 1 },
+          { "$ref": "#/$defs/outcomeSelection" }
+        ]
+      }
+    },
+    "marketKey": {
+      "type": "object",
+      "required": ["marketType"],
+      "additionalProperties": false,
+      "properties": {
+        "marketType": { "type": "integer" },
+        "resultType": { "type": "integer" },
+        "interval": { "type": "integer" },
+        "subInterval": { "type": "integer" }
+      }
+    },
+    "marketKeyPartial": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "marketType": { "type": "integer" },
+        "resultType": { "type": "integer" },
+        "interval": { "type": "integer" },
+        "subInterval": { "type": "integer" }
+      }
+    },
+    "stageKey": {
+      "type": "object",
+      "required": ["stage"],
+      "additionalProperties": false,
+      "properties": {
+        "stage": { "type": "integer" },
+        "interval": { "type": "integer" }
+      }
+    },
+    "stageKeyPartial": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "stage": { "type": "integer" },
+        "interval": { "type": "integer" }
+      }
+    },
+    "incidentKey": {
+      "type": "object",
+      "required": ["type"],
+      "additionalProperties": false,
+      "properties": {
+        "type": { "type": "integer" },
+        "params": {
+          "type": "object",
+          "minProperties": 1,
+          "propertyNames": { "pattern": "^[A-Za-z][A-Za-z0-9_]*$" },
+          "additionalProperties": { "type": "string" }
+        }
+      }
+    },
+    "incidentKeyPartial": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "type": { "type": "integer" },
+        "params": {
+          "type": "object",
+          "minProperties": 1,
+          "propertyNames": { "pattern": "^[A-Za-z][A-Za-z0-9_]*$" },
+          "additionalProperties": { "type": "string" }
+        }
+      }
+    },
+
+    "marketRowLeaf": {
+      "type": "object",
+      "allOf": [{ "$ref": "#/$defs/rowCommon" }, { "$ref": "#/$defs/proposalCommon" }],
+      "required": ["key", "target"],
+      "properties": {
+        "key": { "$ref": "#/$defs/marketKey" },
+        "target": {
+          "oneOf": [{ "$ref": "#/$defs/targetOne" }, { "$ref": "#/$defs/targetSkip" }]
+        },
+        "value": { "$ref": "#/$defs/marketValueRule" },
+        "outcomes": { "$ref": "#/$defs/outcomeMap" },
+        "merge": {
+          "type": "object",
+          "required": ["with", "rule"],
+          "additionalProperties": false,
+          "properties": {
+            "with": {
+              "type": "array",
+              "minItems": 1,
+              "items": { "$ref": "#/$defs/marketKey" }
+            },
+            "rule": { "enum": ["first_wins", "last_wins", "declared_order"] }
+          }
+        }
+      },
+      "if": { "required": ["value"] },
+      "then": { "properties": { "target": { "required": ["param"] } } },
+      "unevaluatedProperties": false
+    },
+    "marketRowRule": {
+      "type": "object",
+      "allOf": [{ "$ref": "#/$defs/rowCommon" }, { "$ref": "#/$defs/proposalCommon" }],
+      "required": ["target"],
+      "properties": {
+        "key": { "$ref": "#/$defs/marketKeyPartial" },
+        "target": {
+          "oneOf": [{ "$ref": "#/$defs/targetOne" }, { "$ref": "#/$defs/targetSkip" }]
+        },
+        "value": { "$ref": "#/$defs/marketValueRule" },
+        "outcomes": { "$ref": "#/$defs/outcomeMap" },
+        "merge": {
+          "type": "object",
+          "required": ["with", "rule"],
+          "additionalProperties": false,
+          "properties": {
+            "with": {
+              "type": "array",
+              "minItems": 1,
+              "items": { "$ref": "#/$defs/marketKey" }
+            },
+            "rule": { "enum": ["first_wins", "last_wins", "declared_order"] }
+          }
+        }
+      },
+      "if": { "required": ["value"] },
+      "then": { "properties": { "target": { "required": ["param"] } } },
+      "unevaluatedProperties": false
+    },
+    "marketRowParent": {
+      "type": "object",
+      "allOf": [{ "$ref": "#/$defs/rowCommon" }],
+      "required": ["key", "rules"],
+      "properties": {
+        "key": { "$ref": "#/$defs/marketKey" },
+        "outcomes": { "$ref": "#/$defs/outcomeMap" },
+        "rules": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/marketRowRule" }
+        }
+      },
+      "unevaluatedProperties": false
+    },
+    "marketRow": {
+      "oneOf": [
+        { "$ref": "#/$defs/marketRowLeaf" },
+        { "$ref": "#/$defs/marketRowParent" }
+      ]
+    },
+
+    "stageRowLeaf": {
+      "type": "object",
+      "allOf": [{ "$ref": "#/$defs/rowCommon" }, { "$ref": "#/$defs/proposalCommon" }],
+      "required": ["key", "target"],
+      "properties": {
+        "key": { "$ref": "#/$defs/stageKey" },
+        "target": {
+          "oneOf": [
+            { "$ref": "#/$defs/targetOne" },
+            { "$ref": "#/$defs/targetState" },
+            { "$ref": "#/$defs/targetSkip" }
+          ]
+        }
+      },
+      "unevaluatedProperties": false
+    },
+    "stageRowRule": {
+      "type": "object",
+      "allOf": [{ "$ref": "#/$defs/rowCommon" }, { "$ref": "#/$defs/proposalCommon" }],
+      "required": ["target"],
+      "properties": {
+        "key": { "$ref": "#/$defs/stageKeyPartial" },
+        "target": {
+          "oneOf": [
+            { "$ref": "#/$defs/targetOne" },
+            { "$ref": "#/$defs/targetState" },
+            { "$ref": "#/$defs/targetSkip" }
+          ]
+        }
+      },
+      "unevaluatedProperties": false
+    },
+    "stageRowParent": {
+      "type": "object",
+      "allOf": [{ "$ref": "#/$defs/rowCommon" }],
+      "required": ["key", "rules"],
+      "properties": {
+        "key": { "$ref": "#/$defs/stageKey" },
+        "rules": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/stageRowRule" }
+        }
+      },
+      "unevaluatedProperties": false
+    },
+    "stageRow": {
+      "oneOf": [
+        { "$ref": "#/$defs/stageRowLeaf" },
+        { "$ref": "#/$defs/stageRowParent" }
+      ]
+    },
+
+    "incidentRowLeaf": {
+      "type": "object",
+      "allOf": [{ "$ref": "#/$defs/rowCommon" }, { "$ref": "#/$defs/proposalCommon" }],
+      "required": ["key", "target"],
+      "properties": {
+        "key": { "$ref": "#/$defs/incidentKey" },
+        "target": {
+          "oneOf": [
+            { "$ref": "#/$defs/targetOne" },
+            { "$ref": "#/$defs/targetMany" },
+            { "$ref": "#/$defs/targetSkip" }
+          ]
+        },
+        "value": { "$ref": "#/$defs/incidentValueRule" },
+        "params": { "$ref": "#/$defs/carriage" }
+      },
+      "if": { "required": ["value"] },
+      "then": { "properties": { "target": { "required": ["param"] } } },
+      "unevaluatedProperties": false
+    },
+    "incidentRowRule": {
+      "type": "object",
+      "allOf": [{ "$ref": "#/$defs/rowCommon" }, { "$ref": "#/$defs/proposalCommon" }],
+      "required": ["target"],
+      "properties": {
+        "key": { "$ref": "#/$defs/incidentKeyPartial" },
+        "target": {
+          "oneOf": [
+            { "$ref": "#/$defs/targetOne" },
+            { "$ref": "#/$defs/targetMany" },
+            { "$ref": "#/$defs/targetSkip" }
+          ]
+        },
+        "value": { "$ref": "#/$defs/incidentValueRule" },
+        "params": { "$ref": "#/$defs/carriage" }
+      },
+      "if": { "required": ["value"] },
+      "then": { "properties": { "target": { "required": ["param"] } } },
+      "unevaluatedProperties": false
+    },
+    "incidentRowParent": {
+      "type": "object",
+      "allOf": [{ "$ref": "#/$defs/rowCommon" }],
+      "required": ["key", "rules"],
+      "properties": {
+        "key": { "$ref": "#/$defs/incidentKey" },
+        "rules": {
+          "type": "array",
+          "minItems": 1,
+          "items": { "$ref": "#/$defs/incidentRowRule" }
+        }
+      },
+      "unevaluatedProperties": false
+    },
+    "incidentRow": {
+      "oneOf": [
+        { "$ref": "#/$defs/incidentRowLeaf" },
+        { "$ref": "#/$defs/incidentRowParent" }
+      ]
+    },
+
+    "sportKey": {
+      "type": "object",
+      "required": ["sport"],
+      "additionalProperties": false,
+      "properties": { "sport": { "type": "integer", "minimum": 0 } }
+    },
+    "sportRow": {
+      "type": "object",
+      "allOf": [{ "$ref": "#/$defs/rowCommon" }, { "$ref": "#/$defs/proposalCommon" }],
+      "required": ["key", "target"],
+      "not": { "required": ["composed"] },
+      "properties": {
+        "key": { "$ref": "#/$defs/sportKey" },
+        "target": {
+          "oneOf": [{ "$ref": "#/$defs/targetOne" }, { "$ref": "#/$defs/targetSkip" }]
+        }
+      },
+      "unevaluatedProperties": false
+    }
+  }
+}

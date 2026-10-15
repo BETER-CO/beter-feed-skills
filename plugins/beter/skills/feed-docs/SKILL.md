@@ -1,5 +1,5 @@
 ---
-name: beter-feed-docs
+name: feed-docs
 description: Use when the task involves integrating, consuming, or debugging the BETER sports data feed — SignalR/WebSocket connection to the BETER feed, timetable/scoreboard/incident/trading channels, message contracts, offsets, connection snapshots, timers, match regulations, incident or market codes, rate limits, the BETER testing sandbox, the BETER feed HTTP API, or the BETER Client Console. Also use for any question naming BETER, docs.beter.co, or console.beter.co, and when a BETER feed payload needs interpreting.
 ---
 
@@ -163,6 +163,29 @@ If a code is absent from the documentation, say it is undocumented and quote it 
 
 ## Fetching so that quotes are real
 
+Fetch with the shipped helper, not a hand-rolled script. Stay in the repository
+you're working in — do not `cd` into the skill's directory — and invoke the
+helper by its path: it lives in the `bin/` directory of the `beter`
+plugin, two levels above this skill file. The `Skill` tool prints `Base directory
+for this skill: <path>` when it loads this file; the plugin directory is that
+path's grandparent, so the helper is at `<path>/../../bin/fetch-docs.py`. Do not
+search the filesystem for it — `find /` costs minutes and finds nothing this line
+does not already say. Run
+`python <plugin dir>/bin/fetch-docs.py feed/trading-feed/meta-data …`, falling
+back to `node <plugin dir>/bin/fetch-docs.mjs feed/trading-feed/meta-data …`
+only when Python is not available. Give it bare paths from the routing table,
+e.g. `feed/trading-feed/meta-data`. It writes one file per page to
+`.beter-fetch/` under your working directory — path `/` replaced by `__`, e.g.
+`.beter-fetch/feed__trading-feed__meta-data.txt` — and prints, per page, the
+page, HTTP status, byte count, sha256 of the text, and the output path. Read
+that file and quote from it. Prefer a slice to the whole page:
+`--section <heading-substring>` matches a heading case-insensitively and prints from it
+up to the next heading of the same or higher level, and `--grep <regex> [--context N]`
+prints the matching lines with their line numbers in the saved file, so a long page
+costs a few screens of context instead of all of it; a slice is exact text, but widen it
+(`--context`, or the enclosing section) before quoting a guarantee, because the clause
+that limits its scope can sit just outside the match.
+
 Fetch the raw page and read the text yourself. Do not quote from a fetch tool that
 summarises — a summariser drops exactly the clauses that carry scope, and those
 clauses are the answer. Observed losses include "within the same Match" dropped from
@@ -170,9 +193,9 @@ an ordering guarantee, and "the Regulation object remains the single source of
 truth" dropped from a field description.
 
 Pages are server-rendered; a plain HTTP GET returns the full content. Page content
-sits inside `<main>`. Decode as UTF-8 — pages carry typographic quotes and Cyrillic
-in name examples, and a lossy decode corrupts precisely the characters some
-questions are about.
+sits inside `<main>`, which is what the helper extracts. Decode as UTF-8 — pages
+carry typographic quotes and Cyrillic in name examples, and a lossy decode corrupts
+precisely the characters some questions are about.
 
 Use a summarising fetch only to locate a page. Quote from raw text.
 
